@@ -464,8 +464,10 @@ fix_branches_for_unexecuted_code ()
  	{
  	  if ((cur_edge->src) && (cur_edge->dest))
  	    {
- 	      if (bb_colors[cur_edge->src->index] !=
- 		  bb_colors[cur_edge->dest->index])
+ 	      if ((cur_edge->src->index >= 0)
+		  && (cur_edge->dest->index >= 0)
+		  && (bb_colors[cur_edge->src->index] !=
+		      bb_colors[cur_edge->dest->index]))
  		{
  		  crossing_edges[i] = cur_edge;
  		  i++;
@@ -474,7 +476,7 @@ fix_branches_for_unexecuted_code ()
  	}
     } /* FOR_EACH_BB */
   
-  n_crossing_edges = i+1;
+  n_crossing_edges = i;
   
   /* If any destination of a crossing edge does not have a label, add label;
      Convert any fall-through crossing edges (for blocks that do not contain

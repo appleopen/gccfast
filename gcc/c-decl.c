@@ -8569,7 +8569,7 @@ while_loop_is_memset_p (init, cond, body, incr_code)
 		  tree rhs = TREE_OPERAND (stmt1, 1);
 		  
 		  if ((TREE_CODE (rhs) != INTEGER_CST)
-		      || (TREE_VALUE (rhs) != 0))
+		      || (!integer_zerop (rhs)))
 		    is_ok_for_memset = false;
 
 		  if ((TREE_CODE (lhs) != INDIRECT_REF)
@@ -8655,7 +8655,37 @@ for_loop_is_memset_p (loop)
        tree stmt = NULL_TREE;
 
        if (TREE_CODE (body) == COMPOUND_STMT)
-	 stmt = COMPOUND_BODY (body);
+	 {
+	   stmt = COMPOUND_BODY (body);
+	   if (stmt && (TREE_CODE (stmt) == SCOPE_STMT))
+	     {
+
+	       /* The for-loop body is enclosed in curly braces.  Make
+		  sure the for-loop body contains exactly one statement,
+		  which is an expression statement. */
+
+	       tree scope_begin = stmt;
+	       tree assignment = NULL_TREE;
+	       tree scope_end = NULL_TREE;
+	       
+	       if (TREE_CHAIN (stmt))
+		 assignment = TREE_CHAIN (stmt);
+
+	       if (assignment && TREE_CHAIN (assignment))
+		 scope_end = TREE_CHAIN (assignment);
+
+	       if (scope_begin && scope_end && assignment
+		   && SCOPE_BEGIN_P (scope_begin)
+		   && SCOPE_END_P (scope_end)
+		   && (TREE_CODE (scope_begin) == SCOPE_STMT)
+		   && (TREE_CODE (scope_end) == SCOPE_STMT)
+		   && (TREE_CODE (assignment) == EXPR_STMT))
+		 stmt = EXPR_STMT_EXPR (TREE_CHAIN (stmt));
+	       else
+		 stmt = NULL_TREE;
+	     }
+
+	 }
        else if (TREE_CODE (body) == EXPR_STMT)
 	 stmt = EXPR_STMT_EXPR (body);
 
@@ -8665,7 +8695,7 @@ for_loop_is_memset_p (loop)
 	  || ((TREE_CODE (TREE_OPERAND (stmt, 0)) != INDIRECT_REF)
 	      && (TREE_CODE (TREE_OPERAND (stmt, 0)) != ARRAY_REF))
 	  || ((TREE_CODE (TREE_OPERAND (stmt, 1)) != INTEGER_CST)
-	      || (TREE_VALUE (TREE_OPERAND (stmt, 1)) != 0)))
+	      || (! integer_zerop (TREE_OPERAND (stmt, 1)))))
 	is_ok_for_memset = false;
     }
   else
@@ -8697,6 +8727,37 @@ for_loop_is_memset_p (loop)
 	  && (TREE_CODE (incr) != PREDECREMENT_EXPR))
 	is_ok_for_memset = false;
      
+    }
+
+  /* Verify that the loop step variable is either a pointer or not unsigned. */
+
+  if (is_ok_for_memset)
+    {
+      tree incr_value;
+      tree incr_var;
+      
+      while ((TREE_CODE (TREE_OPERAND (incr, 0)) == NOP_EXPR)
+	     || (TREE_CODE (TREE_OPERAND (incr, 0)) == CONVERT_EXPR))
+	incr = TREE_OPERAND (incr, 0);
+
+      if (TREE_CODE (TREE_OPERAND (incr, 0)) == INTEGER_CST)
+	{
+	  incr_value = TREE_OPERAND (incr, 0);
+	  incr_var   = TREE_OPERAND (incr, 1);
+	}
+      else
+	{
+	  incr_value = TREE_OPERAND (incr, 1);
+	  incr_var = TREE_OPERAND (incr, 0);
+	}
+
+      if (! integer_onep (incr_value))
+	is_ok_for_memset = false;
+
+      if ((TREE_UNSIGNED (TREE_TYPE (incr_var)) == 1)
+	  && (POINTER_TYPE_P (TREE_TYPE (incr_var)) == 0))
+	is_ok_for_memset = false;
+      
     }
 
   if (is_ok_for_memset)
@@ -8799,7 +8860,7 @@ build_while_loop_memset_tree (loop, stmt1, stmt2, init_stmt, increment_type)
       
       loc_arg = TREE_OPERAND (base_address, 0);
       init_arg = TREE_OPERAND (EXPR_STMT_EXPR (init_stmt), 1);
-      if ((TREE_VALUE (init_arg) != 0)
+      if (! integer_zerop (init_arg)
 	  && ((increment_type == PREINCREMENT_EXPR)
 	      || (increment_type == POSTINCREMENT_EXPR)
 	      || (increment_type == PLUS_EXPR)))
@@ -8848,6 +8909,10 @@ build_while_loop_memset_tree (loop, stmt1, stmt2, init_stmt, increment_type)
 
   value_arg = TREE_OPERAND (stmt1, 1);
 
+  /* Perform type-conversion on value argument, if necessary */
+  
+  if (POINTER_TYPE_P (TREE_TYPE (value_arg)))
+    value_arg = integer_zero_node;
 
   /* Build the argument list for the memset call. */
 
@@ -8895,14 +8960,21 @@ perform_memset_loop_transformation (tp, walk_subtrees, data)
 	  tree new_stmt;
 	  tree base_address;
 	  tree offset;
+	  tree index;
 	  tree operand_0;
+	  int done;
 	  
 	  /* Create tree for memset function call: */
 
 	  /* We know the loop body is a single assignment to a memory location.
 	     Get that memory location (the left hand side of the assignment). */
+
+	  mem_loc_arg = COMPOUND_BODY (FOR_BODY (*tp));
+
+	  if (TREE_CODE (mem_loc_arg) == SCOPE_STMT)
+	    mem_loc_arg = EXPR_STMT_EXPR(TREE_CHAIN (mem_loc_arg));
 	  
-	  mem_loc_arg = TREE_OPERAND (COMPOUND_BODY (FOR_BODY (*tp)), 0);
+	  mem_loc_arg = TREE_OPERAND (mem_loc_arg, 0);
 
 	  /* We know that mem_loc_arg is an INDIRECT_REF.  It had better
 	     consist of a base address plus offset.  We need to pull those
@@ -8910,6 +8982,7 @@ perform_memset_loop_transformation (tp, walk_subtrees, data)
 
 	  base_address = NULL_TREE;
 	  offset = NULL_TREE;
+	  index = NULL_TREE;
 
 	  if ((TREE_CODE (mem_loc_arg) != INDIRECT_REF)
 	      && (TREE_CODE (mem_loc_arg) != ARRAY_REF))
@@ -8925,18 +8998,34 @@ perform_memset_loop_transformation (tp, walk_subtrees, data)
 		    {
 		      offset = TREE_OPERAND (operand_0, 1);
 		      if (TREE_CODE (offset) == CONVERT_EXPR)
-			offset = TREE_OPERAND (offset, 0);
-		      if (TREE_CODE (offset) == MULT_EXPR)
 			{
-			  if (TREE_CODE (TREE_OPERAND (offset, 0)) == INTEGER_CST)
+			  /* No shortening conversions allowed. */
+
+			  if (TYPE_PRECISION (TREE_TYPE (offset)) >=
+			      TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (offset, 
+								       0))))
 			    offset = TREE_OPERAND (offset, 0);
-			  else if (TREE_CODE (TREE_OPERAND (offset, 1)) == INTEGER_CST)
-			    offset = TREE_OPERAND (offset, 1);
 			  else
 			    offset = NULL_TREE;
 			}
+		      if (offset && (TREE_CODE (offset) == MULT_EXPR))
+			{
+			  if (TREE_CODE (TREE_OPERAND (offset, 0)) == INTEGER_CST)
+			    {
+			      index = TREE_OPERAND (offset, 1);
+			      offset = TREE_OPERAND (offset, 0);
+			    }
+			  else if (TREE_CODE (TREE_OPERAND (offset, 1)) == INTEGER_CST)
+			    {
+			      index = TREE_OPERAND (offset, 0);
+			      offset = TREE_OPERAND (offset, 1);
+			    }
+			  else
+			      index = offset = NULL_TREE;
+			      
+			}
 		      else
-			offset = NULL_TREE;
+			index = offset = NULL_TREE;
 		    }
 		  else
 		    base_address = NULL_TREE;
@@ -8944,11 +9033,42 @@ perform_memset_loop_transformation (tp, walk_subtrees, data)
 	      else
 		{
 		  base_address = TREE_OPERAND (mem_loc_arg, 0);
-		  offset = NULL_TREE;
+		  index = offset = NULL_TREE;
 		}
 	    }
 
+	  /* Verify that the array index being used in the left-hand side of
+	     the assignment is exactly the same as the variable being
+	     incremented/decremented by the loop increment (e.g. eliminate
+	     cases such as A[B[i]] = 0).  */
+	     
 
+	  done = 0;
+	  while (index && !done)
+	    {
+
+	      /* Skip over NOPS and type conversions as long as they don't do
+	         any shortening type conversions. */
+
+	      if ((TREE_CODE (index) == NOP_EXPR)
+		  || (TREE_CODE (index) == CONVERT_EXPR))
+		{
+		  if (TYPE_PRECISION (TREE_TYPE (index)) >=
+		      TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (index, 0))))
+		    index = TREE_OPERAND (index, 0);
+		  else
+		    done = 1;
+		}
+	      else
+		done = 1;
+	    }
+	      
+
+	  if ((index != TREE_OPERAND (FOR_EXPR (*tp), 0))
+	      && (index != TREE_OPERAND (FOR_EXPR (*tp), 1)))
+	    index = offset = NULL_TREE;	      
+	  
+	  
 	  if (base_address && offset)
 	    {
 
@@ -8957,7 +9077,12 @@ perform_memset_loop_transformation (tp, walk_subtrees, data)
 	      /* Get the constant value that is being assigned to the memory 
 		 location. */
 
-	      value_arg = TREE_OPERAND (COMPOUND_BODY (FOR_BODY (*tp)), 1);
+	      value_arg = COMPOUND_BODY (FOR_BODY (*tp));
+
+	      if (TREE_CODE (value_arg) == SCOPE_STMT)
+		value_arg = EXPR_STMT_EXPR (TREE_CHAIN (value_arg));
+
+	      value_arg = TREE_OPERAND (value_arg, 1);
 	  
 	      /* Build the size argument (the number of bytes to be updated by
 		 the call to memset).  It should be the absolute value
@@ -8985,13 +9110,18 @@ perform_memset_loop_transformation (tp, walk_subtrees, data)
 	      /* If the 'for' loop is incrementing from some non-zero position,
 		 make sure memset starts at the appropriate offset too. */
 
-	      if ((TREE_VALUE (init_arg) != 0)
+	      if (! integer_zerop (init_arg)
 		  && ((TREE_CODE (FOR_EXPR (*tp)) == PREINCREMENT_EXPR)
 		      || (TREE_CODE (FOR_EXPR (*tp)) == POSTINCREMENT_EXPR)))
 		  
 		mem_loc_arg = build_binary_op (PLUS_EXPR, mem_loc_arg,
 					       init_arg, 1);
-	      
+
+	      /* Perform type-conversion on value argument, if necessary */
+
+	      if (POINTER_TYPE_P (TREE_TYPE (value_arg)))
+		value_arg = integer_zero_node;
+
 	      /* Build the actual function call. */
 	      
 	      arglist = build_tree_list (NULL_TREE, size_arg);

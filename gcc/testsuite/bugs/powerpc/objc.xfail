@@ -569,33 +569,33 @@
 #3256251: objc/execute/bf-9.m compilation,  -gfull
 #3256251: objc/execute/bycopy-3.m compilation,  -gfull
 3252510: objc.dg/try-catch-2.m (test for excess errors)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 44)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 46)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 51)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 52)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 53)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 67)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 68)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 69)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 70)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 71)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 72)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 80)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 81)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 82)
-3368444: objc.dg/comp-types-1.m  (test for warnings, line 83)
-3368444: objc.dg/comp-types-1.m (test for excess errors)
-3368444: objc.dg/comp-types-6.m (test for excess errors)
-3368444: objc.dg/image-info.m scan-assembler
-3368444: objc.dg/method-5.m (test for excess errors)
-3368444: objc.dg/method-7.m  (test for warnings, line 18)
-3368444: objc.dg/method-7.m  (test for warnings, line 18) #1
-3368444: objc.dg/method-7.m  (test for warnings, line 9)
-3368444: objc.dg/method-7.m  (test for warnings, line 13)
-3368444: objc.dg/method-7.m (test for excess errors)
-3368444: objc.dg/nested-func-1.m (test for excess errors)
-3368444: objc.dg/symtab-1.m scan-assembler L_OBJC_SYMBOLS:
-3368444: objc.dg/try-catch-4.m (test for excess errors) 
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 44)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 46)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 51)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 52)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 53)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 67)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 68)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 69)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 70)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 71)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 72)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 80)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 81)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 82)
+#3368444: objc.dg/comp-types-1.m  (test for warnings, line 83)
+#3368444: objc.dg/comp-types-1.m (test for excess errors)
+#3368444: objc.dg/comp-types-6.m (test for excess errors)
+3391389: objc.dg/image-info.m scan-assembler
+#3368444: objc.dg/method-5.m (test for excess errors)
+#3368444: objc.dg/method-7.m  (test for warnings, line 18)
+#3368444: objc.dg/method-7.m  (test for warnings, line 18) #1
+#3368444: objc.dg/method-7.m  (test for warnings, line 9)
+#3368444: objc.dg/method-7.m  (test for warnings, line 13)
+#3368444: objc.dg/method-7.m (test for excess errors)
+3395911: objc.dg/nested-func-1.m (test for excess errors)
+3391389: objc.dg/symtab-1.m scan-assembler L_OBJC_SYMBOLS:
+3395918: objc.dg/try-catch-4.m (test for excess errors) 
 ###-----------------------------------------------------------------
 ###------- These used to xfail on spec branch only -----------------
 #3375165: objc/execute/IMP.m execution,  -O0

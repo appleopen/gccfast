@@ -246,28 +246,30 @@ install_no_src:
 	    --targets="$(TARGETS)" \
 	    --prefix="$(PREFIX)" \
 	    --symlinks=$(DO_SYMLINKS)
+	rm    -rf $(DSTROOT)/usr/include/gcc/darwin/$(VERSION)
+	ln -s 3.3 $(DSTROOT)/usr/include/gcc/darwin/$(VERSION)
+	rm    -rf $(DSTROOT)/usr/include/gcc/darwin/3.3
+	mkdir -p  $(DSTROOT)/usr/include/gcc/darwin/3.3
+	rm    -rf $(DSTROOT)/usr/lib/gcc/darwin/$(VERSION)
+	ln -s 3.3 $(DSTROOT)/usr/lib/gcc/darwin/$(VERSION)
+	rm    -rf $(DSTROOT)/usr/lib/gcc/darwin/3.3
+	mkdir -p  $(DSTROOT)/usr/lib/gcc/darwin/3.3
+	rm    -rf $(DSTROOT)/usr/libexec/gcc/darwin/i386/$(VERSION)
+	ln -s 3.3 $(DSTROOT)/usr/libexec/gcc/darwin/i386/$(VERSION)
+	rm    -rf $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3
+	mkdir -p  $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3
+	install -s -m a+rx $(DSTROOT)/usr/bin/gcc-$(VERSION) $(DSTROOT)/usr/libexec/gcc/darwin/i386/$(VERSION)/driver
+	install -s -m a+rx $(DSTROOT)/usr/bin/gcc-$(VERSION) $(DSTROOT)/usr/libexec/gcc/darwin/ppc/$(VERSION)/driver
+	install    -m a+rx $(SYMROOT)/ppc/usr/bin/gcc-$(VERSION)  $(SYMROOT)/ppc/lib/ppc/driver
+	if [ -d $(SYMROOT)/i386/usr/bin/gcc-$(VERSION) ] ; then \
+		install    -m a+rx $(SYMROOT)/i386/usr/bin/gcc-$(VERSION) $(SYMROOT)/i386/lib/i386/driver ; \
+	fi
 	rm -rf $(DSTROOT)/Developer
 	rm -rf $(DSTROOT)/usr/bin
-	rm -rf $(DSTROOT)/usr/include/gcc/darwin/3.3
-	rm -rf $(DSTROOT)/usr/include/gcc/darwin/$(VERSION)
-	rm -rf $(DSTROOT)/usr/lib/gcc/darwin/$(VERSION)
-	rm -rf $(DSTROOT)/usr/libexec/gcc/darwin/i386/$(VERSION)
-	install -s -m a+rx $(SYMROOT)/ppc/usr/bin/gcc-$(VERSION) $(DSTROOT)/usr/libexec/gcc/darwin/ppc/$(VERSION)/driver
-	install    -m a+rx $(SYMROOT)/ppc/usr/bin/gcc-$(VERSION) $(SYMROOT)/ppc/lib/ppc/driver
-	ln -s 3.3 $(DSTROOT)/usr/include/gcc/darwin/$(VERSION)
-	ln -s 3.3 $(DSTROOT)/usr/lib/gcc/darwin/$(VERSION)
-	ln -s 3.3 $(DSTROOT)/usr/libexec/gcc/darwin/i386/$(VERSION)
-	mkdir -p $(DSTROOT)/usr/include/gcc/darwin/3.3
-	mkdir -p $(DSTROOT)/usr/lib/gcc/darwin/3.3
-	mkdir -p $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3
-	install -s -m a+rx $(SYMROOT)/i386/usr/bin/gcc-$(VERSION) $(DSTROOT)/usr/libexec/gcc/darwin/i386/$(VERSION)/driver
-	install    -m a+rx $(SYMROOT)/i386/usr/bin/gcc-$(VERSION) $(SYMROOT)/i386/lib/i386/driver
-	rm -rf $(DSTROOT)/usr/include/gcc/darwin/3.3/*
-	rm -rf $(DSTROOT)/usr/lib/gcc/darwin/3.3/*
-	rm -f $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3/cc1*
-	rm -f $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3/gcov
-	rm -f $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3/specs
-	rm -f $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3/cpp
+	rm -rf $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3/cc1*
+	rm -rf $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3/cpp
+	rm -rf $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3/gcov
+	rm -rf $(DSTROOT)/usr/libexec/gcc/darwin/i386/3.3/specs
 
 # 3.3-fast hackery (above)
 

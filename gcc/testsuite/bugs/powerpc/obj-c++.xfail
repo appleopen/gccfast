@@ -70,5 +70,4 @@
 3368546: g++.dg/eh/spec6.C  (test for errors, line 13)
 3372198: g++.dg/eh/registers1.C execution test
 3372232: g++.dg/eh/unexpected1.C execution test
-3381342: g++.dg/altivec-6.C execution test
-
+#3381342: g++.dg/altivec-6.C execution test

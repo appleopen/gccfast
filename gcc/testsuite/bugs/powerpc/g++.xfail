@@ -149,7 +149,7 @@
 3372232: g++.dg/eh/unexpected1.C execution test
 3381302: g++.ext/label1.C caused compiler crash
 3381302: g++.ext/label2.C caused compiler crash
-3381342: g++.dg/altivec-6.C execution test
+#3381342: g++.dg/altivec-6.C execution test
 3381347: g++.dg/compat/break/bitfield7 x_tst.o compile
 3381349: g++.dg/compat/eh/unexpected1 x_tst.o-y_tst.o execute
 3381351: g++.dg/compat/init/array5 x_tst.o-y_tst.o execute
